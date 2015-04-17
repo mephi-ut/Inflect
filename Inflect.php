@@ -87,6 +87,7 @@ class Inflect {
 			'(ый)'			=> array('ого',	'ому',	'ого',	'ым',	'ом'),	// учёный
 			'(ец)'			=> array('ца',	'цу',	'ца',	'цом',	'це'),	// певец
 			'(н|р)ь'		=> array('$1я',	'$1ю',	'$1я',	'$1ем',	'$1е'),	// конь
+			'тр'			=> array('а',	'у',	'',	'ом',	'е'),	// центр
 		),
 		self::FEMALE => array(
 			'(а)'			=> array('ы',	'е',	'у',	'ой',	'е'),	// машина
@@ -218,7 +219,7 @@ class Inflect {
 	 */
 	public function getNounGender($noun) {
 		switch (true) {
-			case preg_match('/(к|ч|он|ый|ст|р|ец|нь|рь|рт|им)$/u', $noun):
+			case preg_match('/(к|ч|он|ый|ст|р|ец|нь|рь|рт|им|тр)$/u', $noun):
 				return self::MALE;
 				break;
 			case preg_match('/(а|я|сть|чь)$/u', $noun):
