@@ -67,7 +67,7 @@ class Inflect {
 	private $nounEndingsMap = array(
 		self::MALE => array(
 			'(к|т)'			=> array('$1а',	'$1у',	'$1а',	'$1ом',	'$1е'),	// техник
-			'(ч|он|р|им)'		=> array('$1а',	'$1у',	'$1',	'$1ом',	'$1е'),	// топор
+			'(ч|он|р|им|л)'		=> array('$1а',	'$1у',	'$1',	'$1ом',	'$1е'),	// топор
 			'(ый)'			=> array('ого',	'ому',	'ого',	'ым',	'ом'),	// учёный
 			'(ец)'			=> array('ца',	'цу',	'ца',	'цом',	'це'),	// певец
 			'(н|р)ь'		=> array('$1я',	'$1ю',	'$1я',	'$1ем',	'$1е'),	// конь
@@ -103,7 +103,9 @@ class Inflect {
 			return;
 		}
 
-		$this->explodeName($fullName);
+		if ($this->explodeName($fullName) === FALSE) {
+			return $fullname;
+		}
 		$this->gender = $this->getGender();
 		$this->case = $case;
 		
@@ -142,7 +144,6 @@ class Inflect {
 	/**
 	 * Определение пола
 	 *
-	 * @param string $fullName OPTIONAL Фамилия Имя Отчество
 	 * @return string|null 
 	 */
 	public function getNounGender() {
@@ -170,7 +171,9 @@ class Inflect {
 	 */
 	public function getGender($fullName = null) {
 		if (!is_null($fullName)) {
-			$this->explodeName($fullName);
+			if ($this->explodeName($fullName) === FALSE) {
+				return $fullName;
+			}
 		}
 		//by MiddleName
 		if (isset($this->middleName)) {
@@ -301,7 +304,13 @@ class Inflect {
 	}
 
 	private function explodeName($fullName) {
-		list($this->lastName, $this->firstName, $this->middleName) = explode(' ', ucwords(trim($fullName)));
+		$array = explode(' ', ucwords(trim($fullName)));
+		if (!isset($array[2]))
+			return FALSE;
+
+		list($this->lastName, $this->firstName, $this->middleName) = $array;
+
+		return TRUE;
 	}
 
 }
