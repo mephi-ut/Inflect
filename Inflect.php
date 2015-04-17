@@ -64,6 +64,22 @@ class Inflect {
 		)
 	);
 
+	private $abjectiveEndingsMap = array(
+		self::MALE => array(
+			'(ый)'			=> array('ого',	'ому',	'ого',	'ым',	'ом'),	// красный
+			'(ий)'			=> array('его',	'ему',	'его',	'им',	'ем'),	// синий
+			'(ой)'			=> array('ого',	'ому',	'ого',	'ом',	'ом'),	// большой
+		),
+		self::FEMALE => array(
+			'(ая)'			=> array('ой',	'ой',	'ой',	'ой',	'ой'),	// красная
+			'(яя)'			=> array('ей',	'ей',	'ей',	'ей',	'ей'),	// синяя
+		),
+		self::NEUTER => array(
+			'(ое)'			=> array('ого',	'ому',	'ого',	'ым',	'ом'),	// красное
+			'(ее)'			=> array('его',	'ему',	'его',	'им',	'ем'),	// синее
+		),
+	);
+
 	private $nounEndingsMap = array(
 		self::MALE => array(
 			'(к|т)'			=> array('$1а',	'$1у',	'$1а',	'$1ом',	'$1е'),	// техник
@@ -122,6 +138,28 @@ class Inflect {
 	}
 
 	/**
+	 * Возвращает просклоненное прилагательное в выбранном падеже
+	 * 
+	 * @param string $abjective Существительное
+	 * @param int $case Падеж (0 - genitive, 1 - dative, 2 - accusative, 3 - instrumentative, 4 - prepositional)
+	 * @return string
+	 */
+	public function getInflectAbjective($abjective, $case) {
+		if (empty($abjective)) {
+			return;
+		}
+
+		$this->case = $case;
+
+		$words = split(' ', $abjective);
+		foreach ($words as $id => &$word) {
+			$word = $this->processAbjective($word);
+		}
+
+		return join(' ', $words);
+	}
+
+	/**
 	 * Возвращает просклоненное существительное в выбранном падеже
 	 * 
 	 * @param string $noun Существительное
@@ -134,11 +172,21 @@ class Inflect {
 		}
 
 		$this->case = $case;
-		$this->noun = $noun;
-		$this->gender = $this->getNounGender();
-		$this->processingNoun();
 
-		return $this->noun;
+		$words = split(' ', $noun);
+		foreach ($words as &$word) {
+			if (!$this->isAdjective($word)) {
+				$word = $this->processNoun($word);
+				break;
+			}
+			$word = $this->getInflectAbjective($word, $case);
+		}
+
+		return join(' ', $words);
+	}
+
+	public function isAdjective($string) {
+		return ($this->getAbjectiveGender($string) != null);
 	}
 
 	/**
@@ -146,15 +194,37 @@ class Inflect {
 	 *
 	 * @return string|null 
 	 */
-	public function getNounGender() {
+	public function getAbjectiveGender($abjective) {
 		switch (true) {
-			case preg_match('/(к|ч|он|ый|ст|р|ец|нь|рь|рт|им)$/u', $this->noun):
+			case preg_match('/(ый|ий|ой)$/u', $abjective):
 				return self::MALE;
 				break;
-			case preg_match('/(а|я|сть|чь)$/u', $this->noun):
+			case preg_match('/(ая|яя)$/u', $abjective):
 				return self::FEMALE;
 				break;
-			case preg_match('/(о|ще|ё|ие|мя|е)$/u', $this->noun):
+			case preg_match('/(ое|ее)$/u', $abjective):
+				return self::NEUTER;
+				break;
+			default:
+				return null;
+		}
+		return null;
+	}
+
+	/**
+	 * Определение пола
+	 *
+	 * @return string|null 
+	 */
+	public function getNounGender($noun) {
+		switch (true) {
+			case preg_match('/(к|ч|он|ый|ст|р|ец|нь|рь|рт|им)$/u', $noun):
+				return self::MALE;
+				break;
+			case preg_match('/(а|я|сть|чь)$/u', $noun):
+				return self::FEMALE;
+				break;
+			case preg_match('/(о|ще|ё|ие|мя|е)$/u', $noun):
 				return self::NEUTER;
 				break;
 			default:
@@ -274,17 +344,30 @@ class Inflect {
 		return $this;
 	}
 
-	protected function processingNoun() {
-		$nounEndingsMap = $this->nounEndingsMap[$this->gender];
+	protected function processAbjective($abjective) {
+		$abjectiveEndingsMap = $this->abjectiveEndingsMap[$this->getAbjectiveGender($abjective)];
 
-		foreach($nounEndingsMap as $pattern => $replacement_array) {
+		foreach($abjectiveEndingsMap as $pattern => $replacement_array) {
 			$count = 0;
-			$this->noun = preg_replace('/'.$pattern.'$/u', $replacement_array[$this->case], $this->noun, 1, $count);
+			$abjective = preg_replace('/'.$pattern.'$/u', $replacement_array[$this->case], $abjective, 1, $count);
 			if ($count)
 				break;
 		}
 
-		return $this;
+		return $abjective;
+	}
+
+	protected function processNoun($noun) {
+		$nounEndingsMap = $this->nounEndingsMap[$this->getNounGender($noun)];
+
+		foreach($nounEndingsMap as $pattern => $replacement_array) {
+			$count = 0;
+			$noun = preg_replace('/'.$pattern.'$/u', $replacement_array[$this->case], $noun, 1, $count);
+			if ($count)
+				break;
+		}
+
+		return $noun;
 	}
 
 	/**
