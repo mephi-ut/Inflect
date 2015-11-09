@@ -174,7 +174,7 @@ class Inflect {
 
 		$this->case = $case;
 
-		$words = split(' ', $noun);
+		$words = explode(' ', $noun);
 		foreach ($words as &$word) {
 			if (!$this->isAdjective($word)) {
 				$word = $this->processNoun($word);
