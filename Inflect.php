@@ -152,7 +152,7 @@ class Inflect {
 
 		$this->case = $case;
 
-		$words = split(' ', $abjective);
+		$words = explode(' ', $abjective);
 		foreach ($words as $id => &$word) {
 			$word = $this->processAbjective($word);
 		}
