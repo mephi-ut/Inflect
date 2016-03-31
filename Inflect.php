@@ -176,7 +176,7 @@ class Inflect {
 
 		$words = explode(' ', $noun);
 		foreach ($words as &$word) {
-			if (!$this->isAdjective($subword)) {
+			if (!$this->isAdjective($word)) {
 				$subwords = explode('-', $word);
 				foreach ($subwords as &$subword)
 					$subword = $this->processNoun($subword);
