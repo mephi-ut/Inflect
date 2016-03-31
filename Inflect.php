@@ -176,11 +176,14 @@ class Inflect {
 
 		$words = explode(' ', $noun);
 		foreach ($words as &$word) {
-			if (!$this->isAdjective($word)) {
-				$word = $this->processNoun($word);
+			if (!$this->isAdjective($subword)) {
+				$subwords = explode('-', $word);
+				foreach ($subwords as &$subword)
+					$subword = $this->processNoun($subword);
+				$word = join('-', $subwords);
 				break;
 			}
-			$word = $this->getInflectAbjective($word, $case);
+			$word = $this->getInflectAbjective($subword, $case);
 		}
 
 		return join(' ', $words);
