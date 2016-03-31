@@ -183,7 +183,7 @@ class Inflect {
 				$word = join('-', $subwords);
 				break;
 			}
-			$word = $this->getInflectAbjective($subword, $case);
+			$word = $this->getInflectAbjective($word, $case);
 		}
 
 		return join(' ', $words);
